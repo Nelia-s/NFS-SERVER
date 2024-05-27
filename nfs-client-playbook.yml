@@ -3,20 +3,18 @@
   hosts: nfs-client
   become: true
   vars:
-    allowed_network: "192.168.10.0/24"
+    nfs_server: "192.168.182.129"
     os_family: "{{ ansible_os_family }}"
+    nfs_chemin: "/srv/nfs"
   tasks:
     - name: Installation des paquets RedHat
-      when: ansible_os_family == "Redhad"
-      ansible.builtin.yum:
-        name: nfs-utils
+      ansible.builtin.packege:
+        name: "{{ 'nfs-utils' if os_family == 'Redhad' else 'nfs-comon' }}"
         state: present
-    
-    - name: Installation des paquets Debian
-      when: ansible_os_family == "Debian"
-      ansible.builtin.apt:
-        name: nfs-common
-        state: present
-    
-    - name: Ajout d'une entrée correcte /etc/fstab
+
+    - name: Mount du fs nfs
+      ansible.posix.mount:
+        scr: "{{ nfs_server }}:{{ nfs_chemin }}"
+        fstype: nfs
+        state: mounted
       

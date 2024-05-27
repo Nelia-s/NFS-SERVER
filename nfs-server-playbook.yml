@@ -3,7 +3,7 @@
   hosts: nfs-server
   become: true
   vars:
-    allowed_network: "192.168.10.0/24"
+    allowed_network: "192.168.182.0/24"
     os_family: "{{ ansible_os_family }}"
   tasks:
     - name: Installation des paquets Redhad
