@@ -1,0 +1,22 @@
+---
+- name: Creation client nfs
+  hosts: nfs-client
+  become: true
+  vars:
+    allowed_network: "192.168.10.0/24"
+    os_family: "{{ ansible_os_family }}"
+  tasks:
+    - name: Installation des paquets RedHat
+      when: ansible_os_family == "Redhad"
+      ansible.builtin.yum:
+        name: nfs-utils
+        state: present
+    
+    - name: Installation des paquets Debian
+      when: ansible_os_family == "Debian"
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+    
+    - name: Ajout d'une entrée correcte /etc/fstab
+      

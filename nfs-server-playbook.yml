@@ -1,0 +1,49 @@
+---
+- name: Creation serveur nfs
+  hosts: nfs-server
+  become: true
+  vars:
+    allowed_network: "192.168.10.0/24"
+    os_family: "{{ ansible_os_family }}"
+  tasks:
+    - name: Installation des paquets Redhad
+      when: ansible_os_family == "Redhad"
+      ansible.builtin.yum:
+        name: nfs-utils
+        state: present
+
+    - name: Installation des paquets Debian
+      when: ansible_os_family == "Debian"
+      ansible.builtin.apt:
+        name: nfs-kernel-server
+        state: present
+        update_cache: yes
+      notify: start_service_nfs
+
+    - name: Creation du répertoire a partager
+      ansible.builtin.file:
+      path: /srv/nfs
+      state: directory
+      owner: osadmin
+      group: osadmin
+      mode: 0755
+
+    - name: Modifier le fichier /etc/exports
+      ansible.builtin.file:
+        path: /etc/exports
+        line: "/srv/nfs              {{ allowed_network }}(rw)"
+        regexp: '^/srv/nfs'
+      notify:
+        - restart_service_nfs
+  handlers:
+    - name: start_service_nfs
+      ansible.builtin.service:
+        name: nfs-server
+        state: started
+        enabled: yes
+
+    - name: restart_service_nfs
+      ansible.builtin.service:
+        name: nfs-server
+        state: restarted
+
